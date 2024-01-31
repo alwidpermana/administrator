@@ -7,7 +7,7 @@ class Dashboard extends CI_Controller {
 		if (!$this->session->userdata("is_login")) {
 			redirect(base_url());
 		}
-		$this->load->library('encrypt');
+		// $this->load->library('encrypt');
 	}
 	/**
 	 * Index Page for this controller.
@@ -52,11 +52,11 @@ class Dashboard extends CI_Controller {
 	}
 	public function test()
 	{
-		$msg = $this->session->userdata("user_id").'||'.date('Y-m-d');; //Plain text 
-	    $key =  //Key 32 character 
+		$msg = $this->session->userdata("user_id").'||'.date('Y-m-d'); //Plain text 
+	    // $key =  //Key 32 character 
 	       //default menggunakan MCRYPT_RIJNDAEL_256 
-	       $hasil_enkripsi = $this->encrypt->encode($msg);  
-	       $hasil_dekripsi = $this->encrypt->decode($hasil_enkripsi); 
+	       // $hasil_enkripsi = $this->encrypt->encode($msg);  
+	       // $hasil_dekripsi = $this->encrypt->decode($hasil_enkripsi); 
 	       echo "Pesan yang mau dienkripsi: ".$msg."<br/><br/>"; 
 	       echo "Hasil enkripsi: ".$hasil_enkripsi."<br/><br/>"; 
 	       echo "Hasil dekripsi: ".$hasil_dekripsi."<br/><br/>"; 

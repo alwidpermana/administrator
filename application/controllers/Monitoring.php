@@ -347,7 +347,17 @@ class Monitoring extends CI_Controller {
 		$status = $this->input->post("status");
 		date_default_timezone_set('Asia/Jakarta');
         $tanggal = date('Y-m-d H:i:s');
-		$data = $this->m_process_data->updateData('lamaran',array('status'=>'Tidak Aktif','status_data'=>'CLOSE','updated_at'=>$tanggal,'hasil_tes'=>$status), array('id' => $id));
+		$data = $this->m_process_data->updateData('lamaran',array('status'=>'Tidak Aktif','status_data'=>'CLOSE','updated_at'=>$tanggal,'hasil_tes'=>$status,'tgl_hasil'=>$tanggal), array('id' => $id));
+		echo json_encode($data);
+	}
+	public function changeStatusLamaranCancel()
+	{
+		$this->load->model("m_process_data");
+		$id = $this->input->post("id");
+		$status = $this->input->post("status");
+		date_default_timezone_set('Asia/Jakarta');
+        $tanggal = date('Y-m-d H:i:s');
+		$data = $this->m_process_data->updateData('lamaran',array('status'=>'Aktif','status_data'=>'OPEN','updated_at'=>$tanggal,'hasil_tes'=>null, 'tgl_hasil'=>null), array('id' => $id));
 		echo json_encode($data);
 	}
 }

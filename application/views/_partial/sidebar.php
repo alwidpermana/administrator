@@ -98,6 +98,11 @@
                 <span class="label">Lamaran Masuk Tanpa Recruitmen</span>
               </a>
             </li>
+            <li>
+              <a href="<?=base_url()?>data_master/referensi" class="<?=$side=='data_master-referensi' ? 'active':''?>">
+                <span class="label">Referensi</span>
+              </a>
+            </li>
           </ul>
         </li> 
         <li>

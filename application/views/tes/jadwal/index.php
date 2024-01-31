@@ -293,7 +293,7 @@
                 <div class="row operator">
                   <div class="col-12">
                     <div class="form-floating mb-2">
-                      <input type="text" class="date-picker form-control datePickerFloatingLabel" placeholder="Date" name="inputTglTes" id="inputTglTes" onchange="getNoTes()" />
+                      <input type="text" class="date-picker form-control datePickerFloatingLabel" placeholder="Date" name="inputTglTes" id="inputTglTes" value="<?=date("m/d/Y")?>" onchange="getNoTes()" />
                       <label>Tanggal Tes</label>
                     </div>
                   </div>

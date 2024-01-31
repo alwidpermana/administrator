@@ -177,7 +177,8 @@
                       </div>
                     </div>
                   </section>
-                  <?php if ($data->test_id != null): ?>
+                  <?php
+                   if ($data->test_id != null):?>
                     <section class="scroll-section" id="penilaianTes1">
                       <h2 class="small-title">Tahap 1 - Tes Basic</h2>
                       <div class="card mb-5">
@@ -230,6 +231,8 @@
                                 <tbody>
                                   <?php
                                     $i=0;
+                                    $jmlTes = 0;
+                                    $nilaiTes = 0;
                                     foreach ($setting1 as $key) {
                                       $row[$i] = $key;
                                       $i++;
@@ -245,6 +248,7 @@
                                         $cekID="";
                                         $no = 1;
                                         $field = '';
+
                                         for ($i=0; $i <$n ; $i++) { 
                                           $cell=$row[$i];
                                           $field = $cell->field == 'komitmen_ttd_pernyataan'?$cell->field:'nilai_'.$cell->field;
@@ -261,21 +265,26 @@
                                             echo '<td' .($total[$cell->objek]['jml']>1?' rowspan="' .($total[$cell->objek]['jml']).'">':'>') .$cell->objek.'</td>';
                                             $cekID=$cell->objek;
                                           }
+                                          $nilaiTes +=$tahap1->$field;
                                           echo "<td>$cell->tes</td>";
                                           echo '<td>'.$tahap1->$field.'</td>';
                                           echo "<td>$cell->nilai</td>";
                                           echo '<td>'.$hasil.'</td>';
                                           echo '<td>'.$tahap1->$keterangan.'</td>';
                                           echo '</tr>';
+                                          $jmlTes+=1;
 
                                         $no++;
                                         }
+                                        $totalStandar = $jmlTes*100;
+                                        $toleransi = $totalStandar*0.9;
+                                        $hasilTesOtomatis = $toleransi>$nilaiTes?'TIDAK LULUS':'LULUS';
                                   ?>
                                 </tbody>
                                 <tfoot class="text-center">
                                   <tr>
                                     <th colspan="2" class="text-end">Jumlah</th>
-                                    <th>100</th>
+                                    <th><?=$nilaiTes?></th>
                                     <th colspan="3"></th>
                                   </tr>
                                   <tr>
@@ -286,6 +295,11 @@
                                   <tr class="bg-muted text-light">
                                     <th colspan="2" class="text-start">HASIL TES Tahap 1 - Tes Basic</th>
                                     <th colspan="3"><?=$tahap1->hasil_tes == NULL ? 'Belum Tes':strtoupper($tahap1->hasil_tes)?></th>
+                                    <th></th>
+                                  </tr>
+                                  <tr class="bg-muted text-light">
+                                    <th colspan="2" class="text-start">HASIL TES Tahap 1 (OTOMATIS) - Tes Basic</th>
+                                    <th colspan="3"><?=$hasilTesOtomatis?></th>
                                     <th></th>
                                   </tr>
                                 </tfoot>
@@ -375,6 +389,7 @@
                                 <tbody>
                                   <?php
                                     $i2=0;
+                                    $hasilTes2 = 0;
                                     foreach ($setting2 as $key2) {
                                       $row2[$i2] = $key2;
                                       $i2++;
@@ -411,7 +426,7 @@
                                           echo '<td>'.$hasil2.'</td>';
                                           echo '<td>'.$tahap2->$keterangan.'</td>';
                                           echo '</tr>';
-
+                                          $hasilTes2+=$cell2->nilai;
                                         $no2++;
                                         }
                                   ?>
@@ -419,7 +434,7 @@
                                 <tfoot class="text-center">
                                 <tr>
                                   <th colspan="2" class="text-end">Jumlah</th>
-                                  <th>100</th>
+                                  <th><?=$hasilTes2?></th>
                                   <th colspan="3"></th>
                                 </tr>
                                 <tr>
@@ -480,6 +495,15 @@
                         </div>
                       </div>
                     </section>
+                  <?php elseif($data->hasil_tes == 'NG'): ?>
+                    <section class="scroll-section">
+                      <div class="row">
+                        <div class="col-12 col-xl-3 col-lg-3 col-md-3 mb-5"></div>
+                        <div class="col-12 col-xl-6 col-lg-6 col-md-6 mb-5">
+                          <button type="button" class="btn btn-outline-primary active-scale-down w-100 btnCancel" data="<?=$data->id?>" status="NG"><i data-acorn-icon="arrow-double-right"></i>Cancel<i data-acorn-icon="arrow-double-left"></i></button>
+                        </div>
+                      </div>
+                    </section>
                   <?php endif ?>
                   <?php if ($data->test_id != null || $data->test_id_2 != null): ?>
                     <?php if ($data->hasil_tes == null): ?>
@@ -490,7 +514,16 @@
                             <button type="button" class="btn btn-outline-primary active-scale-down w-100 btnStatus" data="<?=$data->id?>" status="Tidak Aktif"><i data-acorn-icon="arrow-double-right"></i>Klik untuk status lamaran menjadi Tidak Aktif<i data-acorn-icon="arrow-double-left"></i></button>
                           </div>
                         </div>
-                      </section>    
+                      </section>  
+                    <?php elseif($data->hasil_tes == 'Tidak Aktif'):?>
+                      <section class="scroll-section">
+                        <div class="row">
+                          <div class="col-12 col-xl-3 col-lg-3 col-md-3 mb-5"></div>
+                          <div class="col-12 col-xl-6 col-lg-6 col-md-6 mb-5">
+                            <button type="button" class="btn btn-outline-primary active-scale-down w-100 btnCancel" data="<?=$data->id?>" status="Tidak Aktif"><i data-acorn-icon="arrow-double-right"></i>Cancel<i data-acorn-icon="arrow-double-left"></i></button>
+                          </div>
+                        </div>
+                      </section>
                     <?php endif ?>
                   <?php endif ?>
                 </div>
@@ -567,6 +600,25 @@
             cache:true,
             async:true,
             url:base_url+'monitoring/changeStatusLamaran',
+            success:function(data){
+              Swal.fire("Berhasil mengubah status menjadi "+status,"","success");
+              location.reload()
+            },
+            error:function(data){
+              Swal.fire("gagal mengubah status","Cek Jaringan Perangkat Anda","error")
+            }
+          })
+        })
+        $('.btnCancel').on('click', function(){
+          var id = $(this).attr("data")
+          var status = $(this).attr("status")
+          $.ajax({
+            type:'post',
+            data:{id,status},
+            dataType:'json',
+            cache:true,
+            async:true,
+            url:base_url+'monitoring/changeStatusLamaranCancel',
             success:function(data){
               Swal.fire("Berhasil mengubah status menjadi "+status,"","success");
               location.reload()

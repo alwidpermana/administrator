@@ -184,7 +184,14 @@
                                           $cell=$row[$i];
                                           $field = $cell->field == 'komitmen_ttd_pernyataan'?$cell->field:'nilai_'.$cell->field;
                                           $keterangan = 'keterangan_'.$cell->field;
-                                          $hasil =$nilai->$field >=$cell->nilai ? 'Lulus':"Tidak Lulus";
+                                          if ($cell->field == 'komitmen_ttd_pernyataan' && $cell->nilai == null) {
+                                            $hasil = 'Lulus';
+                                          }elseif ($nilai->$field>=$cell->nilai) {
+                                            $hasil = 'Lulus';
+                                          }else{
+                                            $hasil='Tidak Lulus';
+                                          }
+                                          // $hasil =$nilai->$field >=$cell->nilai ? 'Lulus':"Tidak Lulus";
                                           echo '<tr class="text-center">';
                                           if($cekID!=$cell->objek){
                                             echo '<td' .($total[$cell->objek]['jml']>1?' rowspan="' .($total[$cell->objek]['jml']).'">':'>') .$cell->objek.'</td>';

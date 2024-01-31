@@ -94,3 +94,24 @@ $db['default'] = array(
 	'failover' => array(),
 	'save_queries' => TRUE
 );
+$db['hosting'] = array(
+	'dsn'	=> '',
+	'hostname' => '103.28.12.226',
+	'username' => 'kpscoid',
+	'password' => 'it@kps0K123',
+	'database' => 'kpscoid_recruitment_v1',
+	'dbdriver' => 'mysqli',
+	'dbprefix' => '',
+	'pconnect' => FALSE,
+	'db_debug' => (ENVIRONMENT !== 'production'),
+	'cache_on' => FALSE,
+	'cachedir' => '',
+	'char_set' => 'utf8',
+	'dbcollat' => 'utf8_general_ci',
+	'swap_pre' => '',
+	'encrypt' => FALSE,
+	'compress' => FALSE,
+	'stricton' => FALSE,
+	'failover' => array(),
+	'save_queries' => TRUE
+);

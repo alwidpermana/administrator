@@ -11,6 +11,7 @@ class Data_master extends CI_Controller {
 		}
 		$this->load->model("m_data_master");
 		$this->load->model("m_process_data");
+		$this->load->model("m_pelamar");
 		// if ($this->session->userdata("is_login")) {
 		// 	redirect(base_url("dashboard"));
 		// }
@@ -629,4 +630,366 @@ class Data_master extends CI_Controller {
 		$response = array('data' =>$data ,'message'=>$message,'sub_message'=>$sub_message,'status'=>$status,'password'=>$password);
 		echo json_encode($response);
 	}
+	public function referensi()
+	{
+		$data['side'] = 'data_master-referensi';
+		$data['menu'] = 'Data Master';
+		$data['sub_menu1'] = 'Referensi';
+		$data['uuid'] = $this->uuid->v4();
+		$data['sub_menu2'] = '';
+		$data['mobile'] = true;
+		$data['link1'] = 'javascript:;';
+		$data['link2'] = 'javascript:;';
+	  	$data['link3'] = 'javascript:;';
+		$data['page'] = 'Referensi';
+		$this->load->view("data_master/referensi/index", $data);
+	}
+	public function getDataPelamar()
+  {
+    $draw = intval($this->input->post("draw"));
+    $start = intval($this->input->post("start"));
+    $length = intval($this->input->post("length"));
+    $order = $this->input->post("order");
+    $search = $this->input->post("search");
+    $search = $search['value'];
+    $col = 0;
+    $dir = "";
+    if (!empty($order)) {
+      foreach ($order as $o) {
+        $col = $o['column'];
+        $dir = $o['dir'];
+      }
+    }
+
+    if ($dir != "asc" && $dir != "desc") {
+      $dir = "desc";
+    }
+    $valid_columns = array(
+      0 => 'created_at',
+      1 => 'nama',
+      2 => 'no_hp',
+      3 => 'email',
+      4 => 'tempat_lahir',
+      5 => 'tgl_lahir',
+      6 => 'jenis_kelamin',
+      7 => 'status_pernikahan',
+      8 =>'jml_anak',
+      9 => 'golongan_darah',
+      10 => 'agama',
+      11 => 'no_ktp',
+      12 => 'kode_pos',
+      13 =>'alamat_ktp',
+      14 => 'alamat_domisili'
+    );
+    if (!isset($valid_columns[$col])) {
+      $order = null;
+    } else {
+      $order = $valid_columns[$col];
+    }
+    if ($order != null) {
+      $this->db->order_by($order, $dir);
+    }
+
+    $x=0;
+
+    $inputSearch = $this->input->get("inputSearch");
+		foreach ($valid_columns as $sterm) // loop kolom 
+    {
+        if (!empty($search)) // jika datatable mengirim POST untuk search
+        {
+            if ($x === 0) // looping pertama
+            {
+                $this->db->group_start();
+                $this->db->like($sterm, $search);
+            } else {
+                $this->db->or_like($sterm, $search);
+            }
+            if (count($valid_columns) - 1 == $x) //looping terakhir
+                $this->db->group_end();
+        }
+        $x++;
+    }
+		
+
+    $this->db->limit($length, $start);
+    $user_id = $this->session->userdata("user_id");
+    $this->db->where("user_id",$user_id);
+    $pelamar = $this->m_pelamar->getDataPelamar();
+    $data = array();
+    $i = $start+1;
+    foreach ($pelamar->result() as $rows) {
+      $data[] = array(
+        $i,
+        '<div class="dropdown me-1">
+                          <button
+                            type="button"
+                            class="btn btn-secondary dropdown-toggle"
+                            id="dropdownMenuOffset"
+                            data-bs-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            data-bs-offset="10,20"
+                          >
+                            <i class="bi bi-gear"></i>
+                          </button>
+                          <div class="dropdown-menu" aria-labelledby="dropdownMenuOffset">
+                            <a class="dropdown-item" href="'.base_url().'pelamar/edit/'.$rows->id.'">Edit</a>
+                            <a class="dropdown-item hapusData" href="javascript:;">Hapus Data</a>
+                          </div>
+                        </div>',
+        '<div class="sw-10 sh-10 me-1 mb-1 d-inline-block"><img src="'.base_url().''.$rows->foto.'" class="img-fluid img-fluid-height rounded-md" alt="thumb" /></div>',
+       	$rows->nama,
+        $rows->no_hp,
+        $rows->email,
+        $rows->tempat_lahir,
+        date("d-m-Y", strtotime($rows->tgl_lahir)),
+        $rows->jenis_kelamin,
+        $rows->status_pernikahan == 'Y' ? 'Menikah' : 'Belum Menikah',
+        $rows->jml_anak,
+        $rows->golongan_darah,
+        $rows->agama,
+        $rows->no_ktp,
+        $rows->kode_pos,
+        $rows->alamat_ktp,
+        $rows->alamat_domisili,
+        $rows->cv,
+        $rows->ijazah_terakhir,
+        $rows->surat_lamaran,
+        $rows->skck,
+        $rows->ktp,
+        $rows->surat_keterangan_sehat,
+        $rows->surat_ijin,
+        $rows->kartu_keluarga,
+        $rows->sertifikat_vaksin,
+        $rows->surat_bebas_narkoba
+      );
+
+      $i++;
+    }
+    $totalPelamar = $this->totalPelamar();
+    $output = array(
+      "draw" => $draw,
+      "recordsTotal" => $totalPelamar,
+      "recordsFiltered" => $totalPelamar,
+      "data" => $data
+    );
+    echo json_encode($output);
+    exit();
+  }
+  public function totalPelamar()
+  {
+    $query = $this->m_pelamar->getJmlPelamar();
+    
+    $result = $query->row();
+    if (isset($result))
+      return $result->num;
+    return 0;
+  }
+  public function add_referensi()
+  {
+  	$data['side'] = 'data_master-referensi';
+	$data['menu'] = 'Data Master';
+	$data['sub_menu1'] = 'Referensi';
+	$data['uuid'] = $this->uuid->v4();
+	$data['sub_menu2'] = 'Add';
+	$data['mobile'] = true;
+	$data['link1'] = 'javascript:;';
+	$data['link2'] = base_url().'data_master/referensi';
+  	$data['link3'] = 'javascript:;';
+	$data['page'] = 'Add Data Referensi';
+	$this->load->view("data_master/referensi/add", $data);
+  }
+  public function addData()
+  {
+  		$inputFoto = $this->input->post("inputFoto");
+		$inputNama = $this->input->post("inputNama");
+		$inputEmail = $this->input->post("inputEmail");
+		$inputNoHP = $this->input->post("inputNoHP");
+		$inputTempatLahir = $this->input->post("inputTempatLahir");
+		$inputTglLahir = $this->input->post("inputTglLahir") == '' ? '' : date("Y-m-d", strtotime($this->input->post("inputTglLahir")));
+		$inputJenisKelamin = $this->input->post("inputJenisKelamin");
+		$inputStatusMenikah = $this->input->post("inputStatusMenikah");
+		$inputJumlahAnak = $this->input->post("inputJumlahAnak") == '' ? 0 : $this->input->post("inputJumlahAnak");
+		$inputGolonganDarah = $this->input->post("inputGolonganDarah");
+		$inputAgama = $this->input->post("inputAgama");
+		$inputNoKTP = $this->input->post("inputNoKTP");
+		$inputAlamatKTP = $this->input->post("inputAlamatKTP");
+		$inputAlamatDomisili = $this->input->post("inputAlamatDomisili");
+		$inputKodePOS = $this->input->post("inputKodePOS");
+		$size_file = $this->input->post("size_file");
+		$setToken = $this->session->userdata("user_id").'||'.date('Y-m-d');
+		$hiddenPhoto = $this->input->post("hiddenPhoto");
+		$inputReferensiNIK = $this->input->post("inputReferensiNIK");
+		$inputReferensiNama = $this->input->post("inputReferensiNama");
+		$inputReferensiJabatan = $this->input->post("inputReferensiJabatan");
+		$inputReferensiDepartemen = $this->input->post("inputReferensiDepartemen");
+		$inputReferensiSubDepartemen = $this->input->post("inputReferensiSubDepartemen");
+		$inputReferensiHubungan = $this->input->post("inputReferensiHubungan");
+		$inputId =$this->input->post("inputIdPelamar");
+		// $dataAttachment = $this->db->query("SELECT id FROM pelamar WHERE cv IS NOT NULL AND ijazah_terakhir IS NOT NULL AND surat_lamaran IS NOT NULL AND skck IS NOT NULL AND ktp IS NOT NULL and surat_keterangan_sehat IS NOT NULL AND surat_ijin IS NOT NULL and kartu_keluarga AND sertifikat_vaksin IS NOT NULL AND id = '$inputId'");
+
+
+		if (hash_verified($setToken,$this->session->userdata("token"))) {
+			if ($size_file>1000000) {
+	        	$data = true;
+	        	$status = 'warning';
+	        	$message = 'Ukuran File Foto Melebihi 1 Mb';
+	        	$sub_message = '';
+	        }else{
+	        	if ($inputNama == '') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Nama Lengkap!';
+			    }elseif ($inputEmail == '') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Email!';
+			    }elseif ($inputNoHP == '') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi No HP!';
+			    }elseif ($inputTempatLahir == '') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Tempat Lahir!';
+			    }elseif ($inputTglLahir == '') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Tanggal Lahir!';
+			    }elseif ($inputNoKTP == '') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi No KTP!';
+			    }elseif ($inputAlamatKTP == '') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Alamat KTP!';
+			    }elseif ($inputAlamatDomisili == '') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Alamat Domisili!';
+			    }elseif ($inputKodePOS=='') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Kode POS!';
+			    }elseif ($inputReferensiNIK=='') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Referensi NIK!';
+			    }elseif ($inputReferensiNama=='') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Referensi Nama!';
+			    }elseif ($inputReferensiJabatan=='') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Referensi Jabatan!';
+			    }elseif ($inputReferensiDepartemen=='') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Referensi Departemen!';
+			    }elseif ($inputReferensiSubDepartemen=='') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Referensi Sub Departemen!';
+			    }elseif ($inputReferensiHubungan=='') {
+			    	$data=true;
+			    	$status = 'warning';
+			    	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			    	$sub_message='Isi Referensi Hubungan!';
+			    }else{
+			    	$config['upload_path']="./assets/arsip/photo-pelamar";
+			        $config['allowed_types']='jpg|png|jpeg';
+			        $config['encrypt_name'] = TRUE;
+			         
+			        $this->load->library('upload',$config);
+		        	if($this->upload->do_upload("inputFoto")){
+				    	$data = $this->upload->data();
+						//Resize and Compress Image
+			            // $config['image_library']='gd2';
+			            $config['source_image']='./assets/arsip/photo-pelamar/'.$data['file_name'];
+			            // $config['create_thumb']= FALSE;
+			            $config['maintain_ratio']= FALSE;
+			            // $config['quality']= '60%';
+			            // $config['width']= 1024;
+			            $config['max_size']     = '1000';
+			        		
+			            // $config['height']= 768;
+			            // $config['new_image']= './assets/dokumen/kecelakaan-kerja/'.$data['file_name'];
+			            $this->load->library('image_lib', $config);
+			            // $this->image_lib->resize();
+			            $fileName= 'assets/arsip/photo-pelamar/'.$data['file_name'];
+				    }else{
+				    	$fileName = $hiddenPhoto;
+				    }
+
+				    if ($fileName == '' && $hiddenPhoto == '') {
+				    	$data = true;
+			        	$status = 'warning';
+			        	$message = 'Lengkapi Datanya Terlebih Dahulu';
+			        	$sub_message = 'Anda belum memasukkan file foto wajah';
+				    }else{
+				    	
+			    		$sql = "SELECT id FROM pelamar WHERE id = '$inputId'";
+
+				    	$cekData = $this->db->query($sql);
+				    	if ($cekData->num_rows() == 0) {
+				    		$idReferensi = $this->uuid->v4();
+				    		$parsingData = array('id' =>$inputId,'foto'=>$fileName,'nama'=>$inputNama,'email'=>$inputEmail,'no_hp'=>$inputNoHP,'tempat_lahir'=>$inputTempatLahir,'tgl_lahir'=>$inputTglLahir,'jenis_kelamin'=>$inputJenisKelamin,'status_pernikahan'=>$inputStatusMenikah,'jml_anak'=>$inputJumlahAnak,'golongan_darah'=>$inputGolonganDarah,'agama'=>$inputAgama,'no_ktp'=>$inputNoKTP,'kode_pos'=>$inputKodePOS,'alamat_ktp'=>$inputAlamatKTP,'alamat_domisili'=>$inputAlamatDomisili,'referensi_id'=>$idReferensi,'user_id'=>$this->session->userdata("user_id"),'created_at'=>$this->uuid->getDateNow());
+							$data = $this->m_process_data->addData("pelamar",$parsingData);
+							
+							$parsingReferensi = array('id'=>$idReferensi,'nik'=>$inputReferensiNIK, 'nama'=>$inputReferensiNama,'jabatan'=>$inputReferensiJabatan,'departemen'=>$inputReferensiDepartemen,'sub_departemen1'=>$inputReferensiSubDepartemen,'hubungan'=>$inputReferensiHubungan,'pelamar_id'=>$inputId,'created_at'=>$this->uuid->getDateNow());
+							$data = $this->m_process_data->addData("referensi",$parsingReferensi);
+				    	}else{
+				    		$userIdFoto = $this->input->post("inputIdPelamar");
+			    			$getFotoBefore = $this->db->query("SELECT foto FROM pelamar WHERE user_id = '$userIdFoto' AND foto IS NOT NULL OR foto != '' AND id = '$userIdFoto'");
+			    			$dataId = array('id' => $userIdFoto);
+				    			
+			    			if ($getFotoBefore->num_rows()>0) {
+			    				$fileFotoBefore = $getFotoBefore->row();
+			    				$fotoBefore = $fileFotoBefore->foto;
+			    			}
+			    			$parsingData = array('foto'=>$fileName,'nama'=>$inputNama,'no_hp'=>$inputNoHP,'email'=>$inputEmail,'tempat_lahir'=>$inputTempatLahir,'tgl_lahir'=>$inputTglLahir,'jenis_kelamin'=>$inputJenisKelamin,'status_pernikahan'=>$inputStatusMenikah,'jml_anak'=>$inputJumlahAnak,'golongan_darah'=>$inputGolonganDarah,'agama'=>$inputAgama,'no_ktp'=>$inputNoKTP,'kode_pos'=>$inputKodePOS,'alamat_ktp'=>$inputAlamatKTP,'alamat_domisili'=>$inputAlamatDomisili,'updated_at'=>$this->uuid->getDateNow());
+							$data = $this->m_process_data->updateData('pelamar',$parsingData, $dataId);		
+
+							$parsingReferensi = array('nik'=>$inputReferensiNIK, 'nama'=>$inputReferensiNama,'jabatan'=>$inputReferensiJabatan,'departemen'=>$inputReferensiDepartemen,'sub_departemen1'=>$inputReferensiSubDepartemen,'hubungan'=>$inputReferensiHubungan,'updated_at'=>$this->uuid->getDateNow());
+							$data = $this->m_process_data->updateData('referensi',$parsingReferensi, array('pelamar_id'=>$userIdFoto));		
+							// if ($data == true && $hiddenPhoto != '' && $fileName != '') {
+							// 	unlink($fotoBefore);
+							// }
+							
+				    	}
+				    	if ($data == true) {
+					    	$status = 'success';
+					    	$message="Berhasil Menyimpan Data";
+					    	$sub_message='Silahkan Lengkapi Attachment';
+				    	}
+				    	
+				    }
+			    }
+	        }
+		}else{
+			$data= true;
+			$status = 'warning';
+			$message='Anda Tidak Memiliki Akses';
+			$sub_message='Segera Login Terlebih Dahulu';
+		}
+
+		$response = array('data' =>$data ,'message'=>$message,'sub_message'=>$sub_message,'status'=>$status );
+		echo json_encode($response);
+  }
 }

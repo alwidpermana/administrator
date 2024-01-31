@@ -7,7 +7,6 @@ class Auth extends CI_Controller {
 		$this->load->model('m_process_data');
 		$this->load->model('m_auth');
 		$this->load->library('encryption');
-		$this->load->library('encrypt');
 		// if ($this->session->userdata("is_login") == false) {
 		// 	redirect(base_url("dashboard"));
 		// }
@@ -53,7 +52,7 @@ class Auth extends CI_Controller {
 			$msg = 'url untuk '.$inputNama.' dengan password = '.$password.' dan email='.$inputEmail.' dengan tujuan email = '.$inputEmail; //Plain text 
            	//Key 32 character 
            	//default menggunakan MCRYPT_RIJNDAEL_256 
-           	$urlVerif = $this->encryption->encode($msg, $key);   
+           	$urlVerif = $this->encryption->encrypt($msg);  
 			$parsingData = array('id' =>$id ,'email'=>$inputEmail,'password'=>$password,'nama'=>$inputNama,'jenis'=>'Umum','url_verification'=>$urlVerif,'created_at'=>$tanggal);
 			$data = $this->m_process_data->addData('user',$parsingData);	
 			if ($data == true) {

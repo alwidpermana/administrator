@@ -544,7 +544,7 @@ class Tes extends CI_Controller {
 	    $start = intval($this->input->post("start"));
 	    $length = intval($this->input->post("length"));
 	    $order = $this->input->post("order");
-	    $search = $this->input->post("seach");
+	    $search = $this->input->post("search");
 	    $search = $search['value'];
 	    $col = 0;
 	    $dir = "";
@@ -836,7 +836,10 @@ class Tes extends CI_Controller {
 					}
 					if ($field != 'komitmen_ttd_pernyataan') {
 						$hasilNilai = $inputNilai[$i] == '' ? 0 : $inputNilai[$i];
-						$parsingNilai = array('nilai_'.$field=>$inputNilai[$i],'tes_'.$field=>$hasil);
+						$parsingNilai = array('nilai_'.$field=>$inputNilai[$i],'tes_'.$field=>$hasil,'keterangan_'.$field=>$inputKeterangan[$i]);
+						$data = $this->m_process_data->updateData('tes_detail_1',$parsingNilai, array('tes_tahap_1_id'=>$inputIdTes,'lamaran_id'=>$inputIdLamaran));
+					}else{
+						$parsingNilai = array('komitmen_ttd_pernyataan'=>$inputNilai[$i],'keterangan_'.$field=>$inputKeterangan[$i]);
 						$data = $this->m_process_data->updateData('tes_detail_1',$parsingNilai, array('tes_tahap_1_id'=>$inputIdTes,'lamaran_id'=>$inputIdLamaran));
 					}
 				}

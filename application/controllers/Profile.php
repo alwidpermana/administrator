@@ -322,15 +322,8 @@ class Profile extends CI_Controller {
 	}
 	public function getListAttachment()
 	{
-		if ($this->session->userdata("jenis") == 'Umum') {
-			$id = $this->session->userdata("user_id");
-			$where = " WHERE user_id = '$id'";
-		}else{
-			$id = $this->input->get("inputIdPelamar");
-			$getData = $this->db->query("SELECT pelamar_id FROM lamaran WHERE id = '$id'")->row();
-			$pelamarId = $getData->pelamar_id;
-			$where = " WHERE id = '$pelamarId'";
-		}
+		$id = $this->input->get("inputIdPelamar");
+		$where = " WHERE id = '$id'";
 		
 		$data['data'] = $this->m_profile->getListAttachment($where)->result();
 		$this->load->view("profile/list-attachment", $data);

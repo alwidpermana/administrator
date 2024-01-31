@@ -57,7 +57,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12 table-responsive">
-                                <table id="scroll-vertical-datatable" class="table nowrap w-100">
+                                <table id="scroll-vertical-datatable" class="table nowrap w-100 table-hover">
                                     <thead>
                                         <tr>
                                             <th>
@@ -77,7 +77,7 @@
                                            <tr>
                                                <td>
                                                    <?php if ($key->status == 'OPEN'): ?>
-                                                        <input class="form-check-input rounded-circle pengajuan inputPengajuan" type="checkbox" value="<?=$key->id?>" id="<?=$key->id?>" name="inputPengajuan[]" jml="<?=$key->pria+$key->wanita?>">
+                                                        <input class="form-check-input rounded-circle pengajuan inputPengajuan" type="checkbox" value="<?=$key->no_pengajuan?>" id="<?=$key->id?>" name="inputPengajuan[]" jml="<?=$key->pria+$key->wanita?>">
                                                         <label class="form-check-label" for="inputPengajuan"></label>
                                                    <?php endif ?>
                                                </td>

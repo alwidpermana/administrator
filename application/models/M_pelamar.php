@@ -8,13 +8,17 @@
 		{
 			$sql = $this->db->select("pelamar.*")
 							->from("pelamar")
+							->join('user','pelamar.user_id = user.id')
+							->where_not_in("jenis","'Eksternal','Umum'")
 							->get();
 			return $sql;
 		}
 		public function getJmlPelamar()
 		{
-			$sql = $this->db->select("count(id) as num")
+			$sql = $this->db->select("count(pelamar.id) as num")
 							->from("pelamar")
+							->join('user','pelamar.user_id = user.id')
+							->where_not_in("jenis","'Eksternal','Umum'")
 							->get();
 			return $sql;
 		}
